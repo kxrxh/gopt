@@ -7,6 +7,11 @@ import (
 
 // MarshalOption marshals o using the given marshal function. None becomes "null";
 // Some(v) becomes marshal(v). Use with any JSON lib (stdlib, sonic, etc.).
+//
+// Example:
+//
+//	b, _ := MarshalOption(Some(42), json.Marshal)  // []byte("42")
+//	b, _ := MarshalOption(None[int](), json.Marshal)  // []byte("null")
 func MarshalOption[T any](o Option[T], marshal func(T) ([]byte, error)) ([]byte, error) {
 	if !o.ok {
 		return []byte("null"), nil
@@ -17,6 +22,11 @@ func MarshalOption[T any](o Option[T], marshal func(T) ([]byte, error)) ([]byte,
 // UnmarshalOption unmarshals data into Option[T] using the given unmarshal function.
 // Null or empty input becomes None; otherwise unmarshal into a new T and return Some(t).
 // Use with any JSON lib (stdlib, sonic, etc.).
+//
+// Example:
+//
+//	o, _ := UnmarshalOption[int]([]byte("42"), json.Unmarshal)  // Some(42)
+//	o, _ := UnmarshalOption[int]([]byte("null"), json.Unmarshal)  // None[int]()
 func UnmarshalOption[T any](data []byte, unmarshal func([]byte, *T) error) (Option[T], error) {
 	trimmed := bytes.TrimSpace(data)
 	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) {
@@ -31,6 +41,11 @@ func UnmarshalOption[T any](data []byte, unmarshal func([]byte, *T) error) (Opti
 
 // MarshalJSON implements encoding/json.Marshaler. None encodes as null; Some(v) encodes as v.
 // T must be JSON-marshalable.
+//
+// Example:
+//
+//	b, _ := json.Marshal(Some(42))   // []byte("42")
+//	b, _ := json.Marshal(None[int]())  // []byte("null")
 func (o Option[T]) MarshalJSON() ([]byte, error) {
 	if !o.ok {
 		return []byte("null"), nil
@@ -40,6 +55,12 @@ func (o Option[T]) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements encoding/json.Unmarshaler. Null decodes as None; otherwise decodes into Some(v).
 // T must be JSON-unmarshalable.
+//
+// Example:
+//
+//	var o Option[int]
+//	json.Unmarshal([]byte("42"), &o)   // o = Some(42)
+//	json.Unmarshal([]byte("null"), &o)  // o = None[int]()
 func (o *Option[T]) UnmarshalJSON(data []byte) error {
 	trimmed := bytes.TrimSpace(data)
 	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) {
