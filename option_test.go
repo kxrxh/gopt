@@ -1,4 +1,4 @@
-package goptions
+package gopt
 
 import (
 	"encoding/json"

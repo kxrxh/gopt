@@ -1,4 +1,4 @@
-package goptions
+package gopt
 
 // Some returns an Option containing the value v.
 //

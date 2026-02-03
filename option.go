@@ -1,6 +1,6 @@
-// Package goptions provides a Rust-inspired Option type for Go 1.21+.
+// Package gopt provides an Option type for Go 1.21+.
 // Option represents an optional value: either Some(T) or None.
-package goptions
+package gopt
 
 // Option is a generic container for an optional value of type T.
 // It is either Some (value present) or None (no value).
@@ -54,7 +54,7 @@ func (o Option[T]) Get() (T, bool) {
 //	v := None[int]().Unwrap()  // panics
 func (o Option[T]) Unwrap() T {
 	if !o.ok {
-		panic("goptions: Unwrap called on None")
+		panic("gopt: Unwrap called on None")
 	}
 	return o.value
 }
@@ -91,7 +91,7 @@ func (o Option[T]) UnwrapOrElse(fn func() T) T {
 //	v := Some(42).Expect("required")  // v=42
 func (o Option[T]) Expect(msg string) T {
 	if !o.ok {
-		panic("goptions: " + msg)
+		panic("gopt: " + msg)
 	}
 	return o.value
 }

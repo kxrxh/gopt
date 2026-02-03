@@ -1,4 +1,4 @@
-package goptions
+package gopt
 
 // Map transforms the contained value if o is Some by applying fn, otherwise returns None[U].
 //
