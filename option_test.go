@@ -3,6 +3,7 @@ package gopt
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"strconv"
 	"testing"
 )
@@ -249,6 +250,10 @@ func TestEquals(t *testing.T) {
 	if Equals(Some(1), None[int]()) || Equals(None[int](), Some(1)) {
 		t.Fatal("Equals(Some, None) should be false")
 	}
+	// Float NaN: NaN != NaN in Go, so Equals(Some(NaN), Some(NaN)) is false.
+	if Equals(Some(math.NaN()), Some(math.NaN())) {
+		t.Fatal("Equals(Some(NaN), Some(NaN)) should be false (NaN != NaN)")
+	}
 }
 
 func TestZip(t *testing.T) {
@@ -340,6 +345,22 @@ func TestUnmarshalOption(t *testing.T) {
 		v, ok := o.Get()
 		t.Fatalf("UnmarshalOption(42) = %v, %v, %v; want Some(42), nil", v, ok, err)
 	}
+	// Empty string "" for Option[string] -> Some(""), not None
+	unmarshalStr := func(data []byte, p *string) error { return json.Unmarshal(data, p) }
+	os, err := UnmarshalOption([]byte(`""`), unmarshalStr)
+	if err != nil || !os.IsSome() || os.Unwrap() != "" {
+		v, ok := os.Get()
+		t.Fatalf("UnmarshalOption with empty string = %v, %v, %v; want Some(\"\"), nil", v, ok, err)
+	}
+	// Invalid JSON for T ([] or {}) returns error
+	_, err = UnmarshalOption([]byte("[]"), unmarshalInt)
+	if err == nil {
+		t.Fatal("UnmarshalOption([]) for Option[int] should return error")
+	}
+	_, err = UnmarshalOption([]byte("{}"), unmarshalInt)
+	if err == nil {
+		t.Fatal("UnmarshalOption({}) for Option[int] should return error")
+	}
 }
 
 func TestOptionMarshalJSON(t *testing.T) {
@@ -364,6 +385,13 @@ func TestOptionUnmarshalJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte("100"), &o); err != nil || !o.IsSome() || o.Unwrap() != 100 {
 		v, ok := o.Get()
 		t.Fatalf("json.Unmarshal(100) = %v, %v, %v; want Some(100), nil", v, ok, err)
+	}
+	// Invalid JSON for T ([] or {}) returns error
+	if err := json.Unmarshal([]byte("[]"), &o); err == nil {
+		t.Fatal("json.Unmarshal([]) for Option[int] should return error")
+	}
+	if err := json.Unmarshal([]byte("{}"), &o); err == nil {
+		t.Fatal("json.Unmarshal({}) for Option[int] should return error")
 	}
 }
 

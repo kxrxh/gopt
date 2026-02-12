@@ -61,10 +61,12 @@ func Try[T any](v T, err error) Option[T] {
 }
 
 // Cond returns Some(v) if ok is true, otherwise None[T]().
+// Note: v is always evaluated; for lazy evaluation when v may panic (e.g. *ptr when ptr is nil),
+// use a conditional or FromPtr instead.
 //
 // Example:
 //
-//	o := Cond(x != nil, *x)
+//	o := Cond(len(s) > 0, s[0])
 func Cond[T any](ok bool, v T) Option[T] {
 	if !ok {
 		return Option[T]{ok: false}

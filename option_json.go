@@ -20,7 +20,9 @@ func MarshalOption[T any](o Option[T], marshal func(T) ([]byte, error)) ([]byte,
 }
 
 // UnmarshalOption unmarshals data into Option[T] using the given unmarshal function.
-// Null or empty input becomes None; otherwise unmarshal into a new T and return Some(t).
+// Null, empty, or whitespace-only input becomes None (not an error); otherwise
+// unmarshal into a new T and return Some(t). Pass raw bytes; the function
+// handles null/empty interpretation.
 // Use with any JSON lib (stdlib, sonic, etc.).
 //
 // Example:
@@ -53,7 +55,8 @@ func (o Option[T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(o.value)
 }
 
-// UnmarshalJSON implements encoding/json.Unmarshaler. Null decodes as None; otherwise decodes into Some(v).
+// UnmarshalJSON implements encoding/json.Unmarshaler. Null, empty, or
+// whitespace-only input decodes as None; otherwise decodes into Some(v).
 // T must be JSON-unmarshalable.
 //
 // Example:

@@ -1,5 +1,8 @@
 // Package gopt provides an Option type for Go 1.21+.
 // Option represents an optional value: either Some(T) or None.
+//
+// Function parameters (e.g. Map's fn, UnwrapOrElse's fn, Filter's pred) must be non-nil;
+// otherwise the call may panic.
 package gopt
 
 // Option is a generic container for an optional value of type T.
@@ -148,6 +151,7 @@ func (o Option[T]) Tap(fn func(T)) Option[T] {
 
 // ToPointer returns nil if None, or a pointer to a copy of the value if Some.
 // Caller may mutate the returned pointer; the value is a copy.
+// Allocates with new(T) for each call when Some; avoid in hot paths for large T.
 //
 // Example:
 //
